@@ -14,6 +14,7 @@ namespace Indigo\Webshop\Controller;
 use Indigo\Cart\Cart;
 use Indigo\Cart\Item;
 use Indigo\Cart\Store\OrmStore;
+use Indigo\Cart\Store\FuelSessionStore;
 
 /**
  * Some class
@@ -31,7 +32,8 @@ class CartController extends \Controller
 	{
 		parent::before($data);
 
-		$this->store = new OrmStore;
+		// $this->store = new OrmStore;
+		$this->store = new FuelSessionStore;
 		$this->cart = new Cart('cart');
 
 		$this->store->load($this->cart);
@@ -54,9 +56,12 @@ class CartController extends \Controller
 			'quantity' => 1
 		));
 
-		// $this->cart->add($item);
+		$this->cart->add($item);
+	}
 
-		// exit;
+	public function action_get()
+	{
+		var_dump($this->cart); exit;
 	}
 
 	public function action_delete()
