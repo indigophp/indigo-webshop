@@ -40,6 +40,8 @@ class OrmStore
 				$cart->add($item->forgeItem());
 			}
 		}
+
+		return true;
 	}
 
 	public function save(Cart $cart)
