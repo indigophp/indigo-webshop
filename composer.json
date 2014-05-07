@@ -1,5 +1,5 @@
 {
-    "name": "indigophp/webshop",
+    "name": "indigophp/indigo-webshop",
     "type": "fuel-module",
     "description": "",
     "license": "MIT",
@@ -16,6 +16,9 @@
         "indigophp/cart": "dev-develop"
     },
     "autoload": {
+        "psr-0": {
+            "Indigo\\Cart\\": "lib/"
+        },
         "psr-4": {
             "Indigo\\Webshop\\": "src/"
         }
@@ -24,5 +27,8 @@
         "psr-4": {
             "Indigo\\Webshop\\": "tests/"
         }
+    },
+    "extra": {
+        "installer-name": "webshop"
     }
 }
