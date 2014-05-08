@@ -20,7 +20,7 @@
             "Indigo\\Cart\\": "lib/"
         },
         "psr-4": {
-            "Indigo\\Webshop\\": "src/"
+            "Indigo\\Webshop\\": ["src/", "classes/"]
         }
     },
     "autoload-dev": {
