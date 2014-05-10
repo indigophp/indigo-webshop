@@ -11,6 +11,7 @@
 
 namespace Indigo\Webshop\Model;
 
+use Indigo\Cart\ItemInterface;
 use Indigo\Cart\Item;
 use Orm\Model;
 
@@ -33,29 +34,54 @@ class CartItemModel extends Model
 	protected static $_properties = array(
 		'id',
 		'cart_id',
-		'product_id',
+		'identifier',
+		'item_id',
+		'name',
+		'price',
 		'quantity',
+		'option',
 	);
 
 	protected static $_table_name = 'cart_items';
 
-	public static function forgeFromItem(Item $item)
+	public static function forgeFromItem(ItemInterface $item)
 	{
-		return static::forge(array(
+		$data = array(
 			'identifier' => $item->getId(),
-			'product_id' => $item->id,
+			'item_id'    => $item->id,
+			'name'       => $item->name,
+			'price'      => $item->price,
 			'quantity'   => $item->quantity,
-		));
+		);
+
+		if (isset($item['option']))
+		{
+			$data['option'] = serialize($item['option']);
+		}
+
+		return static::forge($data);
 	}
 
-	public function forgeItem()
+	public function forgeItem($class = 'Indigo\\Cart\\Item')
 	{
-		return new Item(array(
-			'id'       => (int) $this->product_id,
-			'name'     => 'Name',
-			'price'    => 1.0,
+		$item = array(
+			'id'       => (int) $this->item_id,
+			'name'     => $this->name,
+			'price'    => (float) $this->price,
 			'quantity' => (int) $this->quantity,
-			'tax'      => 27,
-		));
+		);
+
+		if (empty($this->option) === false)
+		{
+			$item['option'] = unserialize($this->option);
+		}
+
+		$item = new $class($item);
+
+		if (!$item instanceof ItemInterface) {
+			throw new \InvalidArgumentException($class . ' does not implement Indigo\\Cart\\ItemInterface.');
+		}
+
+		return $item;
 	}
 }
