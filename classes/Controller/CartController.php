@@ -35,21 +35,19 @@ class CartController extends \Controller
 		parent::before($data);
 
 		// $this->store = new OrmStore;
-		$this->store = new FuelSessionStore;
+		$store = new FuelSessionStore;
 
 		$cart = \Session::get('active_cart', 'cart');
-		$this->cart = new Cart($cart);
+		$cart = new Cart($cart);
 
-		$this->store->load($this->cart);
-	}
+		$store->load($cart);
 
-	public function after($response)
-	{
-		$this->store->save($this->cart);
+		\Event::register('shutdown', function() use ($store, $cart) {
+			$store->save($cart);
+		});
 
-		\Session::set('active_cart', $this->cart->getId());
-
-		return parent::after($response);
+		$this->store = $store;
+		$this->cart = $cart;
 	}
 
 	public function action_index()
@@ -73,7 +71,7 @@ class CartController extends \Controller
 			$table->addCell($item->getPrice(true));
 			$table->addCell($item['quantity']);
 			$table->addCell($item->getSubtotal(true));
-			$table->addCell(\Html::anchor('webshop/cart/delete/' . $item->getId(), 'Delete'));
+			$table->addCell(\Html::anchor('webshop/cart/remove/' . $item->getId(), 'Delete'));
 			$table->addRow();
 		}
 
@@ -84,7 +82,7 @@ class CartController extends \Controller
 		echo ' ';
 		echo \Html::anchor('webshop/cart/add', 'Add');
 		echo ' ';
-		echo \Html::anchor('webshop/cart/reset', 'Delete');
+		echo \Html::anchor('webshop/cart/delete', 'Delete');
 		echo $render->renderTable($table);
 
 		$table = new Table;
@@ -143,7 +141,9 @@ class CartController extends \Controller
 
 		$store->load($this->cart);
 
-		$this->registerRedirect();
+		\Session::set('active_cart', $id);
+
+		return \Response::redirect('webshop/cart/');
 	}
 
 	public function action_save()
@@ -162,27 +162,28 @@ class CartController extends \Controller
 		return \Response::redirect('webshop/cart/');
 	}
 
-	public function action_delete($item)
+	public function action_remove($item)
 	{
 		$this->cart->delete($item);
 
-		$this->registerRedirect();
+		return \Response::redirect('webshop/cart/');
 	}
 
-	public function action_reset()
+	public function action_delete()
 	{
-		$this->cart->reset();
-		$this->store->delete($this->cart);
+		$store = new OrmStore;
+
+		$store->delete($this->cart);
 
 		\Session::set('active_cart', 'cart');
 
 		return \Response::redirect('webshop/cart/');
 	}
 
-	public function registerRedirect()
+	public function action_reset()
 	{
-		\Event::register('controller_finished', function() {
-			\Response::redirect('webshop/cart/');
-		});
+		$this->cart->reset();
+
+		return \Response::redirect('webshop/cart/');
 	}
 }
