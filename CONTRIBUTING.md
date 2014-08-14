@@ -9,10 +9,6 @@ We accept contributions via Pull Requests on [Github](https://github.com/indigop
 
 ## Pull Requests
 
-- **[PSR-2 Coding Standard](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md)** - The easiest way to apply the conventions is to install [PHP Code Sniffer](http://pear.php.net/package/PHP_CodeSniffer).
-
-- **Add tests!** - Your patch won't be accepted if it doesn't have tests.
-
 - **Document any change in behaviour** - Make sure the README and any other relevant documentation are kept up-to-date.
 
 - **Consider our release cycle** - We try to follow semver. Randomly breaking public APIs is not an option.
@@ -25,7 +21,9 @@ We accept contributions via Pull Requests on [Github](https://github.com/indigop
 
 - **Sign your work** - Sign all your commits to let us know you certify the [Developer's Certificate of Origin](#developers-certificate-of-origin).
 
+
 ## Developer's Certificate of Origin
+
 By contributing you certify the below:
 ```
 Developer's Certificate of Origin 1.1
@@ -53,13 +51,6 @@ By making a contribution to this project, I certify that:
     personal information I submit with it, including my sign-off) is
     maintained indefinitely and may be redistributed consistent with
     this project or the open source license(s) involved.
-```
-
-
-## Running Tests
-
-``` bash
-$ phpunit
 ```
 
 

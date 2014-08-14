@@ -1,6 +1,6 @@
 # Indigo Webshop
 
-**Webshop package based on.**
+**Indigo Webshop module.**
 
 
 ## Install
@@ -15,17 +15,8 @@ Via Composer
 }
 ```
 
-**Note**: Package uses PSR-4 autoloader, make sure you have a fresh version of Composer.
-
 
 ## Usage
-
-
-## Testing
-
-``` bash
-$ phpunit
-```
 
 
 ## Contributing

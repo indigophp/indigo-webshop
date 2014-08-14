@@ -1,35 +1,31 @@
 {
-	"name": "indigophp/indigo-webshop",
-	"type": "fuel-module",
-	"description": "",
-	"license": "MIT",
-	"keywords": [""],
-	"homepage": "https://indigophp.com",
-	"authors": [
-		{
-			"name": "Márk Sági-Kazár",
-			"email": "mark.sagikazar@gmail.com"
-		}
-	],
-	"require": {
-		"php": ">=5.4",
-		"indigophp/cart": "dev-develop"
-	},
-	"autoload": {
-		"psr-0": {
-			"Indigo\\Cart\\": "lib/"
-		},
-		"psr-4": {
-			"Indigo\\Webshop\\": ["src/", "classes/"]
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Indigo\\Webshop\\": "tests/"
-		}
-	},
-	"extra": {
-		"installer-name": "webshop"
-	},
-	"minimum-stability": "dev"
+    "name": "indigophp/indigo-webshop",
+    "type": "fuel-module",
+    "description": "Indigo Webshop module",
+    "license": "MIT",
+    "keywords": ["webshop"],
+    "homepage": "https://indigophp.com",
+    "authors": [
+        {
+            "name": "Márk Sági-Kazár",
+            "email": "mark.sagikazar@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "indigophp/fuel-cart": "dev-develop"
+    },
+    "autoload": {
+        "psr-4": {
+            "Indigo\\Webshop\\": ["classes/"]
+        },
+        "files": [
+            "autoload.php"
+        ]
+    },
+    "extra": {
+        "installer-name": "webshop"
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }
