@@ -27,7 +27,7 @@ class WebshopController extends \Controller\BaseController
 	{
 		$em = \Doctrine\Manager::forge()->getEntityManager();
 
-		$product = $em->find('Erp\\Stock\\Entity\\Product', $id);
+		$product = $em->find('Webshop\\Entity\\Product', $id);
 		// $product = \Model\ProductModel::find($id);
 
 		if ($product === null)
@@ -36,6 +36,6 @@ class WebshopController extends \Controller\BaseController
 		}
 
 		$this->template->content = $this->view('webshop/product.twig');
-		$this->template->content->set('product', $product, false0);
+		$this->template->content->set('product', $product, false);
 	}
 }
