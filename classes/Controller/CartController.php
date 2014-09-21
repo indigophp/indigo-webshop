@@ -11,7 +11,7 @@
 
 namespace Indigo\Webshop\Controller;
 
-use Indigo\Fuel\Dependency\Container as DC;
+use Indigo\Fuel\Dependency\Container as DiC;
 use Fuel\Validation\Validator;
 
 /**
@@ -36,7 +36,7 @@ class CartController extends \Controller\BaseController
 		parent::before();
 
 		// This is not real DI, just a mimic
-		$this->cart = DC::resolve('cart');
+		$this->cart = DiC::resolve('cart');
 	}
 
 	public function action_index()
@@ -59,7 +59,7 @@ class CartController extends \Controller\BaseController
 
 		$result = $val->run(\Input::post());
 
-		$logger = \Logger::instance('alert');
+		$logger = DiC::resolve('logger.alert');
 
 		if ( ! $result->isValid())
 		{
@@ -81,7 +81,7 @@ class CartController extends \Controller\BaseController
 			return \Response::redirect_back();
 		}
 
-		$em = \Doctrine\Manager::forge()->getEntityManager();
+		$em = DiC::resolve('doctrine.manager')->getEntityManager();
 
 		$product = $em->find('Erp\\Stock\\Entity\\Product', $id);
 
@@ -139,7 +139,7 @@ class CartController extends \Controller\BaseController
 			$item->setQuantity($quantity);
 		}
 
-		$logger = \Logger::instance('alert');
+		$logger = DiC::resolve('logger.alert');
 
 		// Return with partial success
 		if ($notUpdated > 0)
@@ -165,7 +165,7 @@ class CartController extends \Controller\BaseController
 
 	public function action_remove($id)
 	{
-		$logger = \Logger::instance('alert');
+		$logger = DiC::resolve('logger.alert');
 
 		if ($this->cart->removeItem($id))
 		{
@@ -192,7 +192,7 @@ class CartController extends \Controller\BaseController
 		{
 			$context = ['template' => 'success'];
 
-			\Logger::instance('alert')
+			DiC::resolve('logger.alert')
 				->info(gettext('Cart successfully cleared.'), $context);
 		}
 
