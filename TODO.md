@@ -1,2 +1,3 @@
 # TODO
 
+- [ ] Cart ajax features

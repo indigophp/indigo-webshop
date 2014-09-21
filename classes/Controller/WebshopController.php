@@ -11,6 +11,8 @@
 
 namespace Indigo\Webshop\Controller;
 
+use Indigo\Fuel\Dependency\Container as DiC;
+
 /**
  * Webshop Controller
  *
@@ -25,10 +27,10 @@ class WebshopController extends \Controller\BaseController
 	 */
 	public function action_product($id)
 	{
-		$em = \Doctrine\Manager::forge()->getEntityManager();
+		$manager = DiC::multiton('doctrine.manager');
+		$em = $manager->getEntityManager();
 
-		$product = $em->find('Webshop\\Entity\\Product', $id);
-		// $product = \Model\ProductModel::find($id);
+		$product = $em->find('Erp\\Stock\\Entity\\Product', $id);
 
 		if ($product === null)
 		{
@@ -37,5 +39,19 @@ class WebshopController extends \Controller\BaseController
 
 		$this->template->content = $this->view('webshop/product.twig');
 		$this->template->content->set('product', $product, false);
+	}
+
+	public function action_products()
+	{
+		$segments = \Arr::to_assoc($this->request->route->method_params);
+
+		$manager = DiC::multiton('doctrine.manager');
+		$em = $manager->getEntityManager();
+
+		$repository = $em->getRepository('Erp\\Stock\\Entity\\Product');
+		$products = $repository->findAll();
+
+		$this->template->content = $this->view('webshop/products.twig');
+		$this->template->content->set('products', $products, false);
 	}
 }

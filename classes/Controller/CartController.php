@@ -11,13 +11,8 @@
 
 namespace Indigo\Webshop\Controller;
 
-use Indigo\Cart\Cart;
-use Indigo\Cart\Item;
-use Indigo\Cart\Option\Option;
-use Indigo\Cart\Store\OrmStore;
-use Indigo\Cart\Store\FuelSessionStore;
-use Fuel\Common\Table;
-use Fuel\Common\Table\EnumRowType;
+use Indigo\Fuel\Dependency\Container as DC;
+use Fuel\Validation\Validator;
 
 /**
  * Cart Controller
@@ -26,125 +21,180 @@ use Fuel\Common\Table\EnumRowType;
  */
 class CartController extends \Controller\BaseController
 {
+	/**
+	 * Cart object
+	 *
+	 * @var Indigo\Cart\Cart
+	 */
 	protected $cart;
-	protected $store;
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function before($data = null)
 	{
-		parent::before($data);
+		parent::before();
 
-		// $this->store = new OrmStore;
-		$store = new FuelSessionStore;
-
-		$cart = \Session::get('active_cart', 'cart');
-		$cart = new Cart($cart);
-
-		$store->load($cart);
-
-		\Event::register('shutdown', function() use ($store, $cart) {
-			$store->save($cart);
-		});
-
-		$this->store = $store;
-		$this->cart = $cart;
+		// This is not real DI, just a mimic
+		$this->cart = DC::resolve('cart');
 	}
 
 	public function action_index()
 	{
-		$this->template->content = $this->view('webshop/cart/index.twig');
+		$this->template->content = $this->view('webshop/cart.twig');
 		$this->template->content->set('cart', $this->cart, false);
 	}
 
-	public function action_saved()
+	public function post_add()
 	{
-		$carts = \Model\CartModel::query()->select('identifier')->get();
+		$val = new Validator;
 
-		$this->template->content = $this->view('webshop/cart/saved.twig');
+		$val->addField('id', gettext('ID'))
+			->required()
+			->numericMin(1);
 
-		if ($carts)
+		$val->addField('quantity', gettext('Quantity'))
+			->required()
+			->numericMin(1);
+
+		$result = $val->run(\Input::post());
+
+		$logger = \Logger::instance('alert');
+
+		if ( ! $result->isValid())
 		{
-			$store = new OrmStore;
+			$context = ['errors' => $result->getErrors()];
 
-			foreach ($carts as &$cart)
+			$logger->error(gettext('Product cannot be added to the cart.'), $context);
+
+			return \Response::redirect_back();
+		}
+
+		$id = (int) \Input::post('id');
+		$quantity = (int) \Input::post('quantity');
+
+		// Product is already in the cart
+		if ($this->cart->hasItem($id))
+		{
+			$logger->notice(gettext('Product is already in the cart.'));
+
+			return \Response::redirect_back();
+		}
+
+		$em = \Doctrine\Manager::forge()->getEntityManager();
+
+		$product = $em->find('Erp\\Stock\\Entity\\Product', $id);
+
+		if ($product === null)
+		{
+			$logger->error(gettext('Product cannot be found.'));
+
+			return \Response::redirect('webshop/cart');
+		}
+
+		$item = new \Webshop\ProductItem($product, $quantity);
+
+		$this->cart->addItem($item);
+
+		$context = ['template' => 'success'];
+
+		$logger->info(gettext('Product successfully added to the cart.'), $context);
+
+		return \Response::redirect_back();
+	}
+
+	public function post_update()
+	{
+		// It is possible to only update one item
+		// Will make sense with ajax support
+		$ids = (array) \Input::post('id', array());
+		$quantities = (array) \Input::post('quantity', array());
+
+		// Checking that the two arrays have equals item count is not necessary
+		// Different count means someone is trying to do nasty
+		$items = array_combine($ids, $quantities);
+
+		$notUpdated = 0;
+
+		foreach ($items as $id => $quantity)
+		{
+			// If an item cannot be found return with partial success
+			if ( ! $item = $this->cart->getItem($id))
 			{
-				$cart = new Cart($cart->identifier);
-				$store->load($cart);
+				$notUpdated++;
+
+				continue;
 			}
 
-			$this->template->content->set('carts', $carts, false);
+			$quantity = (int) $quantity;
+
+			// Invalid quantities are skipped
+			if ($quantity < 1)
+			{
+				$notUpdated++;
+
+				continue;
+			}
+
+			$item->setQuantity($quantity);
 		}
-	}
 
-	public function action_add()
-	{
-		$item = new Item(array(
-			'id'       => 1,
-			'name'     => 'Name',
-			'price'    => 1.0,
-			'quantity' => 1,
-			'option'   => new Option(array(
-				'id'    => 1,
-				'name'  => 'Test',
-				'value' => 1.0
-			)),
-		));
+		$logger = \Logger::instance('alert');
 
-		$this->cart->add($item);
-
-		$this->registerRedirect();
-	}
-
-	public function action_load($id)
-	{
-		$this->cart->reset();
-		$this->cart->setId($id);
-
-		$store = new OrmStore;
-
-		$store->load($this->cart);
-
-		\Session::set('active_cart', $id);
-
-		return \Response::redirect('webshop/cart/');
-	}
-
-	public function action_save()
-	{
-		$store = new OrmStore;
-
-		if ($this->cart->getId() == 'cart')
+		// Return with partial success
+		if ($notUpdated > 0)
 		{
-			$this->cart->setId();
+			$context = [
+				'from' => [
+					'%all%'     => count($items),
+					'%updated%' => count($items) - $notUpdated,
+				],
+			];
+
+			$logger->notice(gettext('%updated% out of %all% items updated.'), $context);
+		}
+		else
+		{
+			$context = ['template' => 'success'];
+
+			$logger->info(gettext('Cart successfully updated.'), $context);
 		}
 
-		$store->save($this->cart);
-
-		\Session::set('active_cart', 'cart');
-
-		return \Response::redirect('webshop/cart/');
+		return \Response::redirect_back();
 	}
 
-	public function action_remove($item)
+	public function action_remove($id)
 	{
-		$this->cart->delete($item);
+		$logger = \Logger::instance('alert');
 
-		return \Response::redirect('webshop/cart/');
-	}
+		if ($this->cart->removeItem($id))
+		{
+			$context = ['template' => 'success',];
 
-	public function action_delete()
-	{
-		$store = new OrmStore;
+			$logger->info(gettext('Item successfully removed from the cart.'), $context);
+		}
+		else
+		{
+			$context = [
+				'from' => '%id%',
+				'to'   => $id,
+			];
 
-		$store->delete($this->cart);
+			$logger->warning(gettext('Item #%id% cannot be removed from the cart.'), $context);
+		}
 
-		\Session::set('active_cart', 'cart');
-
-		return \Response::redirect('webshop/cart/');
+		return \Response::redirect('webshop/cart');
 	}
 
 	public function action_reset()
 	{
-		$this->cart->reset();
+		if($this->cart->reset())
+		{
+			$context = ['template' => 'success'];
+
+			\Logger::instance('alert')
+				->info(gettext('Cart successfully cleared.'), $context);
+		}
 
 		return \Response::redirect('webshop/cart/');
 	}

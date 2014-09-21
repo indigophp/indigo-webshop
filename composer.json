@@ -13,7 +13,8 @@
     ],
     "require": {
         "php": ">=5.4",
-        "indigophp/fuel-cart": "dev-develop"
+        "indigophp/fuel-cart": "dev-develop",
+        "pagerfanta/pagerfanta": "~1.0.0"
     },
     "autoload": {
         "psr-4": {
