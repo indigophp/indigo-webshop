@@ -91,4 +91,26 @@ class WebshopController extends \Controller\BaseController
 			return \Uri::update_query_string(['page' => $page]);
 		}, false);
 	}
+
+	public function action_order()
+	{
+		if (\Input::method() === 'POST')
+		{
+			$data = \Input::post();
+			$view = $this->view('email/webshop/order.twig', $data);
+			$view->set('cart', DiC::resolve('cart'), false);
+			// var_dump($view->render()); exit;
+			$email = \Email::forge();
+			$email->from('info@partibuli.hu');
+			$email->to('mark.sagikazar@gmail.com');
+			$email->html_body($view);
+			try
+			{
+				$email->send();
+			}
+			catch (\EmailSendingFailedException $e) {}
+		}
+
+		$this->template->content = $this->view('frontend/webshop/order.twig');
+	}
 }
