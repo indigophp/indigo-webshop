@@ -41,7 +41,7 @@ class CartController extends \Controller\BaseController
 
 	public function action_index()
 	{
-		$this->template->content = $this->view('webshop/cart.twig');
+		$this->template->content = $this->view('frontend/webshop/cart.twig');
 		$this->template->content->set('cart', $this->cart, false);
 	}
 

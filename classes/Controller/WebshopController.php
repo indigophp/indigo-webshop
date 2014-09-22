@@ -40,16 +40,12 @@ class WebshopController extends \Controller\BaseController
 			throw new \HttpNotFoundException();
 		}
 
-		$this->template->content = $this->view('webshop/product.twig');
+		$this->template->content = $this->view('frontend/webshop/product.twig');
 		$this->template->content->set('product', $product, false);
 	}
 
 	public function action_products()
 	{
-		// var_dump($this->request); exit;
-		// var_dump(\Erp\Stock\Model\CategoryModel::generate_options()); exit;
-		// $segments = \Arr::to_assoc($this->request->route->method_params);
-
 		$manager = DiC::multiton('doctrine.manager');
 		$em = $manager->getEntityManager();
 
@@ -70,15 +66,8 @@ class WebshopController extends \Controller\BaseController
 			->select('product')
 			->from('Erp\\Stock\\Entity\\Product', 'product')
 			->innerJoin('product.taxons', 'taxon')
-			->andWhere('taxon = :taxon')
-			->setParameter('taxon', $taxon);
-
-		// $query = $em->createQueryBuilder()
-		// 	->select('p')
-		// 	->from('Erp\\Stock\\Entity\\Product', 'p');
-			// ->innerJoin('p.Taxon', t)
-			// ->where('t.permalink = ?1')
-			// ->setParameter(1, 'kategoriak/'.implode('/', $this->request->route->method_params));
+			->andWhere('taxon.permalink LIKE :taxon')
+			->setParameter('taxon', $taxon->getPermalink() . '%');
 
 		$adapter = new DoctrineORMAdapter($query);
 
@@ -90,7 +79,7 @@ class WebshopController extends \Controller\BaseController
 
 		$view = new TwitterBootstrap3View;
 
-		$this->template->content = $this->view('webshop/products.twig');
+		$this->template->content = $this->view('frontend/webshop/products.twig');
 		$this->template->content->title = dgettext('webshop', 'Products');
 		$this->template->content->set('categories', reset($categories), false);
 		$this->template->content->set('active', $permalink);
