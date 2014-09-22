@@ -120,7 +120,7 @@ class WebshopController extends \Controller\BaseController
 			if ($result->isValid())
 			{
 				$view = $this->view('email/webshop/order.twig', $data);
-				$view->set('cart', DiC::resolve('cart'), false);
+				$view->set('cart', $cart = DiC::resolve('cart'), false);
 
 				$email = \Email::forge();
 				$email->from('info@partibuli.hu');
@@ -136,6 +136,10 @@ class WebshopController extends \Controller\BaseController
 				$context = ['template' => 'success'];
 
 				$logger->info('Megrendelés sikeres.', $context);
+
+				$cart->reset();
+
+				return \Response::redirect('webshop/success');
 			}
 
 			else
@@ -147,5 +151,10 @@ class WebshopController extends \Controller\BaseController
 		}
 
 		$this->template->content = $this->view('frontend/webshop/order.twig');
+	}
+
+	public function action_success()
+	{
+		$this->template->content = $this->view('frontend/webshop/success.twig');
 	}
 }

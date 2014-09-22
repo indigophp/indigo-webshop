@@ -37,6 +37,8 @@ class TwigWebshopExtension extends Twig_Extension
 			'categories' => new \Twig_Function_Method($this, 'categories'),
 			'active' => new \Twig_Function_Method($this, 'active'),
 			'random_products' => new \Twig_Function_Method($this, 'random_products'),
+			'akciok' => new \Twig_Function_Method($this, 'akciok'),
+			'toptermekek' => new \Twig_Function_Method($this, 'toptermekek'),
 		);
 	}
 
@@ -75,6 +77,37 @@ class TwigWebshopExtension extends Twig_Extension
 			->setMaxResults(20)
 			->setFirstResult(rand(1, 950))
 			// ->orderBy(rand(1, 950))
+			->getQuery()
+			->getResult();
+
+		return $products;
+	}
+
+	public function akciok()
+	{
+		$em = DiC::resolve('doctrine.manager')->getEntityManager();
+
+		$products = $em->createQueryBuilder()
+			->select('p')
+			->from('Erp\\Stock\\Entity\\Product', 'p')
+			->where('p.id IN (:ids)')
+			->setParameter('ids', [1051, 1052, 1053])
+			->getQuery()
+			->getResult();
+
+		return $products;
+	}
+
+	public function toptermekek()
+	{
+		$em = DiC::resolve('doctrine.manager')->getEntityManager();
+
+		$products = $em->createQueryBuilder()
+			->select('p')
+			->from('Erp\\Stock\\Entity\\Product', 'p')
+			->where('p.id IN (:ids)')
+			->setParameter('ids', [1030, 1054, 1055, 791, 690, 691])
+			->orderBy('p.id', 'DESC')
 			->getQuery()
 			->getResult();
 
