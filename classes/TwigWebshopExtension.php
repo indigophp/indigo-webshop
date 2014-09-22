@@ -73,6 +73,7 @@ class TwigWebshopExtension extends Twig_Extension
 			->select('p')
 			->from('Erp\\Stock\\Entity\\Product', 'p')
 			->setMaxResults(20)
+			->setFirstResult(rand(1, 950))
 			->getQuery()
 			->getResult();
 
