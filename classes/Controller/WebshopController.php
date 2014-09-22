@@ -87,9 +87,9 @@ class WebshopController extends \Controller\BaseController
 		$this->template->content->set('products', $products, false);
 		$this->template->content->set('pager', $pager, false);
 		$this->template->content->set('pager_view', $view, false);
-		$this->template->content->set('pager_router', function($page)
+		$this->template->content->set('pager_router', function($page) use ($permalink)
 		{
-			return \Uri::update_query_string(['page' => $page]);
+			return \Uri::create('webshop/products/'.$permalink, [], ['page' => $page]);
 		}, false);
 	}
 
