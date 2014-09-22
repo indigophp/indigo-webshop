@@ -52,14 +52,6 @@ class WebshopController extends \Controller\BaseController
 
 		$permalink = implode('/', $this->request->route->method_params);
 
-		$categories = $em->createQueryBuilder()
-			->select('t')
-			->from('Taxonomy\\Entity\\Taxon', 't')
-			->where('t.id = ?1')
-			->setParameter(1, 1)
-			->getQuery()
-			->getResult();
-
 		$taxon = $em->getRepository('Taxonomy\\Entity\\Taxon')
 			->findOneByPermalink($permalink);
 
@@ -82,8 +74,6 @@ class WebshopController extends \Controller\BaseController
 
 		$this->template->content = $this->view('frontend/webshop/products.twig');
 		$this->template->content->title = dgettext('webshop', 'Products');
-		$this->template->content->set('categories', reset($categories), false);
-		$this->template->content->set('active', $permalink);
 		$this->template->content->set('products', $products, false);
 		$this->template->content->set('pager', $pager, false);
 		$this->template->content->set('pager_view', $view, false);
