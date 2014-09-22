@@ -15,6 +15,7 @@ use Indigo\Fuel\Dependency\Container as DiC;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\View\TwitterBootstrap3View;
+use Fuel\Validation\Validator;
 
 /**
  * Webshop Controller
@@ -94,21 +95,65 @@ class WebshopController extends \Controller\BaseController
 
 	public function action_order()
 	{
+		$logger = DiC::resolve('logger.alert');
+
 		if (\Input::method() === 'POST')
 		{
+			$validator = new Validator;
+
+			$validator->addField('name', 'Név')
+				->required();
+
+			$validator->addField('email', 'Email cím')
+				->required()
+				->email();
+
+			$validator->addField('phone', 'Telefonszám')
+				->required();
+
+			$validator->addField('billName', 'Számlázási név')
+				->required();
+
+			$validator->addField('billPostal', 'Irányítószám')
+				->required();
+
+			$validator->addField('billCity', 'Város')
+				->required();
+
+			$validator->addField('billAddress', 'Számlázási cím')
+				->required();
+
 			$data = \Input::post();
-			$view = $this->view('email/webshop/order.twig', $data);
-			$view->set('cart', DiC::resolve('cart'), false);
-			// var_dump($view->render()); exit;
-			$email = \Email::forge();
-			$email->from('info@partibuli.hu');
-			$email->to('mark.sagikazar@gmail.com');
-			$email->html_body($view);
-			try
+
+			$result = $validator->run($data);
+
+			if ($result->isValid())
 			{
-				$email->send();
+				$view = $this->view('email/webshop/order.twig', $data);
+				$view->set('cart', DiC::resolve('cart'), false);
+
+				$email = \Email::forge();
+				$email->from('info@partibuli.hu');
+				$email->to('mark.sagikazar@gmail.com');
+				$email->html_body($view);
+
+				try
+				{
+					$email->send();
+				}
+				catch (\EmailSendingFailedException $e) {}
+
+				$context = ['template' => 'success'];
+
+				$logger->info('Megrendelés sikeres.', $context);
 			}
-			catch (\EmailSendingFailedException $e) {}
+
+			else
+			{
+				$context = ['errors' => $result->getErrors()];
+				$logger->error('Hiba történt a megrendelés közben:', $context);
+			}
+
 		}
 
 		$this->template->content = $this->view('frontend/webshop/order.twig');
