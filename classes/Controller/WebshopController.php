@@ -52,15 +52,15 @@ class WebshopController extends \Controller\BaseController
 
 		$permalink = implode('/', $this->request->route->method_params);
 
-		$taxon = $em->getRepository('Taxonomy\\Entity\\Taxon')
-			->findOneByPermalink($permalink);
+		// $taxon = $em->getRepository('Taxonomy\\Entity\\Taxon')
+		// 	->findOneByPermalink($permalink);
 
 		$query = $em->createQueryBuilder()
 			->select('product')
 			->from('Erp\\Stock\\Entity\\Product', 'product')
 			->innerJoin('product.taxons', 'taxon')
 			->andWhere('taxon.permalink LIKE :taxon')
-			->setParameter('taxon', $taxon->getPermalink() . '%');
+			->setParameter('taxon', $permalink . '%');
 
 		$adapter = new DoctrineORMAdapter($query);
 
