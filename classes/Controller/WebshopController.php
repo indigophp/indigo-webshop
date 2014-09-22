@@ -116,6 +116,7 @@ class WebshopController extends \Controller\BaseController
 			$data = \Input::post();
 
 			$result = $validator->run($data);
+			$error = false;
 
 			if ($result->isValid())
 			{
@@ -123,15 +124,33 @@ class WebshopController extends \Controller\BaseController
 				$view->set('cart', $cart = DiC::resolve('cart'), false);
 
 				$email = \Email::forge();
-				$email->from('info@partibuli.hu');
-				$email->to('mark.sagikazar@gmail.com');
+				$email->from('info@partibuli.hu', 'Parti Buli Bolt');
+				$email->to(\Input::post('email'));
+				$email->subject('Megrendelés');
 				$email->html_body($view);
 
 				try
 				{
 					$email->send();
 				}
-				catch (\EmailSendingFailedException $e) {}
+				catch (\EmailSendingFailedException $e)
+				{
+					$error = true;
+					$errors = ['email' => 'Email küldés sikertelen'];
+				}
+			}
+			else
+			{
+				$error = true;
+				$errors = $result->getErrors();
+			}
+
+			if ($error) {
+				$context = ['errors' => $errors];
+				$logger->error('Hiba történt a megrendelés közben:', $context);
+			}
+			else
+			{
 
 				$context = ['template' => 'success'];
 
@@ -141,13 +160,6 @@ class WebshopController extends \Controller\BaseController
 
 				return \Response::redirect('webshop/success');
 			}
-
-			else
-			{
-				$context = ['errors' => $result->getErrors()];
-				$logger->error('Hiba történt a megrendelés közben:', $context);
-			}
-
 		}
 
 		$this->template->content = $this->view('frontend/webshop/order.twig');
