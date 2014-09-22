@@ -126,6 +126,7 @@ class WebshopController extends \Controller\BaseController
 				$email = \Email::forge();
 				$email->from('info@partibuli.hu', 'Parti Buli Bolt');
 				$email->to(\Input::post('email'));
+				$email->bcc('info@partibuli.hu');
 				$email->subject('Megrendelés');
 				$email->html_body($view);
 
