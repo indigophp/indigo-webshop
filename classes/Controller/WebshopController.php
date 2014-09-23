@@ -91,6 +91,44 @@ class WebshopController extends \Controller\BaseController
 		}, false);
 	}
 
+	public function action_search()
+	{
+		$manager = DiC::multiton('doctrine.manager');
+		$em = $manager->getEntityManager();
+
+		if (empty(\Input::get('search')))
+		{
+			return \Response::redirect('');
+		}
+
+		$query = $em->createQueryBuilder()
+			->select('product')
+			->from('Erp\\Stock\\Entity\\Product', 'product')
+			->andWhere('product.name LIKE :p')
+			->orWhere('product.description LIKE :p')
+			->setParameter('p', '%' . \Input::get('search') . '%');
+
+		$adapter = new DoctrineORMAdapter($query);
+
+		$pager = new Pagerfanta($adapter);
+		$pager->setMaxPerPage(16);
+
+		$pager->setCurrentPage(\Input::get('page', 1));
+		$products = $pager->getCurrentPageResults();
+
+		$view = new TwitterBootstrap3View;
+
+		$this->template->content = $this->view('frontend/webshop/products.twig');
+		$this->template->content->title = 'Keresés';
+		$this->template->content->set('products', $products, false);
+		$this->template->content->set('pager', $pager, false);
+		$this->template->content->set('pager_view', $view, false);
+		$this->template->content->set('pager_router', function($page)
+		{
+			return \Uri::create('webshop/search/', [], ['page' => $page, 'search' => \Input::get('search')]);
+		}, false);
+	}
+
 	public function action_order()
 	{
 		$logger = DiC::resolve('logger.alert');
