@@ -32,6 +32,11 @@ class WebshopController extends \Controller\BaseController
 		'5' => 'Budapesti lufi kiszállítás',
 	];
 
+	protected $payment = [
+		'1' => 'Készpénz',
+		'2' => 'Banki utalás',
+	];
+
 	/**
 	 * Product action
 	 *
@@ -147,6 +152,9 @@ class WebshopController extends \Controller\BaseController
 			$validator->addField('shipping', 'Szállítási mód')
 				->required();
 
+			$validator->addField('payment', 'Fizetési mód')
+				->required();
+
 			$validator->addField('phone', 'Telefonszám')
 				->required();
 
@@ -259,6 +267,7 @@ class WebshopController extends \Controller\BaseController
 
 				$view->cost = $cost;
 				$view->shipping_modes = $this->shipping;
+				$view->payment_modes = $this->payment;
 
 				$email = \Email::forge();
 				$email->from('info@partibuli.hu', 'Parti Buli Bolt');
@@ -302,6 +311,7 @@ class WebshopController extends \Controller\BaseController
 
 		$this->template->content = $this->view('frontend/webshop/order.twig');
 		$this->template->content->shipping = $this->shipping;
+		$this->template->content->payment = $this->payment;
 	}
 
 	public function action_success()
