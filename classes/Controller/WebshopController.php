@@ -101,7 +101,8 @@ class WebshopController extends \Controller\BaseController
 		$manager = DiC::multiton('doctrine.manager');
 		$em = $manager->getEntityManager();
 
-		if (empty(\Input::get('search')))
+		$search = \Input::get('search');
+		if (empty($search))
 		{
 			return \Response::redirect('');
 		}
@@ -111,7 +112,7 @@ class WebshopController extends \Controller\BaseController
 			->from('Erp\\Stock\\Entity\\Product', 'product')
 			->andWhere('product.name LIKE :p')
 			->orWhere('product.description LIKE :p')
-			->setParameter('p', '%' . \Input::get('search') . '%');
+			->setParameter('p', '%' . $search . '%');
 
 		$adapter = new DoctrineORMAdapter($query);
 
