@@ -171,6 +171,9 @@ class WebshopController extends \Controller\BaseController
 			$validator->addField('billAddress', 'Számlázási cím')
 				->required();
 
+			$validator->addField('aszf', 'Ászf')
+				->required();
+
 			$data = \Input::post();
 
 			$result = $validator->run($data);
